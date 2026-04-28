@@ -3,7 +3,7 @@ package tr.edu.deu.efm.command.api;
 /**
  * Represents the stateful environment and memory of a single user session within EFM.
  * <p>
- * While individual commands in the system are strictly stateless, the {@code EfmSession} 
+ * While individual commands in the system are strictly stateless, the {@code Session} 
  * acts as the central repository for dynamic contextual data that changes as the user 
  * interacts with the application. It is carried across the system via the 
  * {@link CommandContext}, ensuring that the core logic remains decoupled from global states.
@@ -14,7 +14,7 @@ package tr.edu.deu.efm.command.api;
  * and custom user preferences.
  * </p>
  */
-public class EfmSession {
+public class Session {
     
     private String currentWorkingDirectory;
 //  private List<String> commandHistory;
@@ -27,7 +27,7 @@ public class EfmSession {
      * the session defaults the starting directory to the user's home folder.
      * </p>
      */
-    public EfmSession() {
+    public Session() {
         this.currentWorkingDirectory = System.getProperty("user.home");
     }
 

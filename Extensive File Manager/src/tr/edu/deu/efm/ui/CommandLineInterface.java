@@ -5,7 +5,7 @@ import tr.edu.deu.efm.command.api.Command;
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandRegistry;
 import tr.edu.deu.efm.command.api.CommandResult;
-import tr.edu.deu.efm.command.api.EfmSession;
+import tr.edu.deu.efm.command.api.Session;
 import tr.edu.deu.efm.command.api.CommandParser;
 import tr.edu.deu.efm.command.impl.DefaultCommandParser;
 import tr.edu.deu.efm.command.impl.DefaultCommandRegistry;
@@ -14,7 +14,7 @@ import tr.edu.deu.efm.config.RegistryConfig;
 public class CommandLineInterface {
 
 	private static Scanner scr = new Scanner(System.in); // global scanner
-	private EfmSession efmSession = new EfmSession();
+	private Session session = new Session();
 	private CommandParser commandParser = new DefaultCommandParser();
 	private CommandRegistry commandRegistry = new DefaultCommandRegistry();
 
@@ -32,14 +32,14 @@ public class CommandLineInterface {
 			CommandContext context = null;
 
 			do {
-				System.out.print(efmSession.getCurrentWorkingDirectory() + ">>");
+				System.out.print(session.getCurrentWorkingDirectory() + ">>");
 				String userInput = scr.nextLine();
 
 				try {
 					context = commandParser.parse(userInput);
 					
                     if (context != null) {
-                        context.setEfmSession(efmSession);
+                        context.setSession(session);
                     }
 
 				} catch (IllegalArgumentException e) {

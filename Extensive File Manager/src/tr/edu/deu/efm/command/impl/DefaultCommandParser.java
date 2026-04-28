@@ -6,6 +6,15 @@ import tr.edu.deu.efm.command.api.CommandParser;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The default implementation of the {@link CommandParser}.
+ * <p>
+ * This class is responsible for translating raw user string input into a
+ * structured {@link CommandContext}. It intelligently handles quotes to support
+ * file paths with spaces and accurately separates the command name, flags
+ * (starting with '-'), and operational arguments.
+ * </p>
+ */
 public class DefaultCommandParser implements CommandParser {
 
 	private static final Pattern COMMAND_PATTERN = Pattern.compile("\"([^\"]*)\"|(\\S+)");
@@ -17,7 +26,6 @@ public class DefaultCommandParser implements CommandParser {
 		}
 
 		CommandContext context = new CommandContext();
-
 		Matcher matcher = COMMAND_PATTERN.matcher(rawInput);
 		boolean isFirstToken = true;
 

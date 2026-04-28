@@ -1,0 +1,55 @@
+PROGRESS.txt
+
+    Note: To ensure easy tracking, all project progress, updates, and milestones will be documented in this file along with their respective dates.
+
+Update: April 28, 2026
+
+Completed Tasks:
+
+  [CORE ARCHITECTURE OVERHAUL] The Result Pattern has been fully integrated. Exception-based control flow (try-catch spaghetti) has been entirely eradicated from the Core layer. All operations now return structured OperationResult DTOs.
+  
+  [PATH RESOLUTION] The "Relative Path" anomaly has been resolved. All Core APIs now require a `currentDir` anchor to intelligently resolve relative paths (., .., etc.) based on the user's simulated session.
+
+  [FULL COMMAND IMPLEMENTATION] All base file management commands are now fully operational, successfully bridging the Core and Command layers without UI leakage:
+    - cd (Supports relative paths)
+    - ls (Supports -a and -l flags, gracefully handles specific files vs. directories)
+    - cp (Supports deep recursive copy and Overwrite/Safe Copy strategies)
+    - mv (Supports safe move and overwrite strategies)
+    - rn (Gracefully handles naming collisions via resolveSibling)
+    - rm (Supports recursive deep deletion and OS Trash Bin vs. Permanent removal)
+    - pwd (Supports verbose output)
+    - exit (Supports verbose farewells)
+    - help (Commands are now listed alphabetically for better UX)
+
+  [ENCAPSULATION FIX] CommandRegistry interface and implementation refactored to prevent Encapsulation Leakage. The internal HashMap is hidden, and a read-only unmodifiable Collection is exposed.
+
+  [DOCUMENTATION] Comprehensive, enterprise-grade Javadoc has been added to all Core implementation classes and Command execution wrappers.
+
+Incomplete Commands:
+  - None for standard file management. (Advanced commands like zip/encrypt are moved to the Phase 3 Backlog).
+
+Backlog / Missing Features:
+
+  Advanced Features (Phase 3): Archiving, encryption, and compression algorithms are the next major milestones.
+
+  Session Management: Clipboard functionality and Command History are not yet implemented.
+
+  UI Enhancements: Lanterna console library has not yet been integrated.
+
+  Audit Trail: Action and error logging mechanism is missing.
+
+  Testing: Unit Tests for FileSystem actions using Mock/In-Memory file systems are pending.
+
+Progress Guidelines (Rules of Engagement):
+
+  Strict SOLID Adherence: Future development must continue to follow SOLID principles.
+
+  Result Pattern Mandate: No core file system logic should rely on throwing Exceptions for business rules. All expected errors must be wrapped in DTOs.
+
+  Loose Coupling: Extreme care must be taken to ensure module independence is not violated (e.g., UI should not leak into Core).
+
+Architectural Thoughts & Future Planning:
+
+  Phase 3 - Encryption & Compression: Approaching this phase, we must avoid static utility classes. To maintain SOLID principles, we will rely heavily on the Strategy Pattern (e.g., CompressionStrategy, EncryptionStrategy) to allow seamless switching between AES, RSA, ZIP, or TAR algorithms without modifying the core Command loops.
+
+  Console Library (Lanterna): To prevent cluttering the main program loop, this library will be abstracted behind a dedicated UI interface.

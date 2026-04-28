@@ -7,45 +7,46 @@ import tr.edu.deu.efm.command.api.CommandResult;
 import tr.edu.deu.efm.core.api.EntityLister;
 import tr.edu.deu.efm.core.api.OperationResult;
 
+/**
+ * Command implementation for listing files and directories.
+ * <p>
+ * This command delegates the listing operation to the {@link EntityLister} core
+ * API. It handles relative paths properly by providing the session's current
+ * directory and strictly uses the Result Pattern to display either the
+ * formatted list or the specific error messages without relying on exceptions.
+ * </p>
+ */
 public class LsCommand extends BaseCommand {
-	
-	EntityLister lister;
+
+	private EntityLister lister;
 
 	public LsCommand(EntityLister lister) {
-		super("ls", "Lists files and directories in the current directory.", "Usage: ls [-l] [-a]");
+		super("ls", "Lists files and directories in the current directory.", "Usage: ls [-l] [-a] [path]");
 		this.lister = lister;
 	}
 
 	@Override
-    public CommandResult execute(CommandContext context) {
-        
-        String targetPathStr;
+	public CommandResult execute(CommandContext context) {
 
-        if (context.getArguments().isEmpty()) {
-            targetPathStr = context.getEfmSession().getCurrentWorkingDirectory().toString();
-        } else {
-            targetPathStr = context.getArguments().get(0);
-        }
+		String currentDir = context.getSession().getCurrentWorkingDirectory();
+		String targetPath = context.getArguments().isEmpty() ? "." : context.getArguments().get(0);
 
-        try {
-            OperationResult result = lister.list(targetPathStr);
+		boolean showHidden = context.getFlags().hasFlag('a');
+		boolean detailed = context.getFlags().hasFlag('l');
 
-            if (result.isSuccess()) {
-                StringBuilder output = new StringBuilder();
-                List<String> items = result.getAffectedItems();
-                
-                for (String item : items) {
-                    output.append(item).append("\n");
-                }
-                
-                return new CommandResult(true, output.toString().trim());
-            } else {
-                return new CommandResult(false, "ls: cannot access '" + targetPathStr + "': Permission denied or error");
-            }
+		OperationResult result = lister.list(currentDir, targetPath, showHidden, detailed);
 
-        } catch (Exception e) { 
-            return new CommandResult(false, e.getMessage());
-        }
-    }
+		if (!result.isSuccess()) {
+			return new CommandResult(false, result.getMessage());
+		}
 
+		StringBuilder output = new StringBuilder();
+		List<String> items = result.getAffectedItems();
+
+		for (String item : items) {
+			output.append(item).append("\n");
+		}
+
+		return new CommandResult(true, output.toString().trim());
+	}
 }

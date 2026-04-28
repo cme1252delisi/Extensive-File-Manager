@@ -48,7 +48,7 @@ public class Settings {
      * <li>{@code false}: Operations will safely abort and return a failure message to prevent accidental data loss.</li>
      * </ul>
      */
-    public static boolean overWriteMode = false;
+    public static boolean overWriteMode = true;
     
     /**
      * Master switch for the application's audit logging mechanism.

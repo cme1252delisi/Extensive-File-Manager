@@ -8,14 +8,21 @@ import tr.edu.deu.efm.command.api.CommandResult;
 import tr.edu.deu.efm.config.Settings;
 import tr.edu.deu.efm.core.api.EntityRenamer;
 import tr.edu.deu.efm.core.api.OperationResult;
-import tr.edu.deu.efm.core.exception.EntityNotFoundException;
 
+/**
+ * Command implementation for renaming files or directories.
+ * <p>
+ * This command interfaces with the {@link EntityRenamer} core API. It
+ * gracefully handles naming collisions or missing files directly through the
+ * returned DTO instead of catching exceptions.
+ * </p>
+ */
 public class RnCommand extends BaseCommand {
 
 	private EntityRenamer renamer;
 
 	public RnCommand(EntityRenamer renamer) {
-		super("rn", "Renamas files or directories", "Usage: rn [-] <path>");
+		super("rn", "Renames files or directories", "Usage: rn [-v] <path> <new_name>");
 		this.renamer = renamer;
 	}
 
@@ -30,31 +37,16 @@ public class RnCommand extends BaseCommand {
 
 		String entityPath = args.get(0);
 		String newName = args.get(1);
+		String currentDir = context.getSession().getCurrentWorkingDirectory();
 		boolean verbose = flags.hasFlag('v');
 
-		try {
-			OperationResult result = renamer.rename(entityPath, newName);
+		OperationResult result = renamer.rename(currentDir, entityPath, newName);
 
-			StringBuilder output = new StringBuilder();
-
-			if (verbose || Settings.verboseAsDefault) {
-				for (String item : result.getAffectedItems()) {
-					output.append("renamed '").append(item).append("'\n");
-				}
-			}
-
-			if (result.isSuccess()) {
-				return new CommandResult(true, output.toString().trim());
-			} else {
-				return new CommandResult(false, "rn: failed to rename item.\n" + output.toString().trim());
-			}
-
-		} catch (EntityNotFoundException e) {
-			return new CommandResult(false, "rn: cannot rename '" + entityPath + "': No such file or directory");
-		} catch (Exception e) {
-			return new CommandResult(false, "rn: a fatal error occurred -> " + e.getMessage());
+		if (!result.isSuccess()) {
+			return new CommandResult(false, result.getMessage());
 		}
 
+		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		return new CommandResult(true, output);
 	}
-
 }

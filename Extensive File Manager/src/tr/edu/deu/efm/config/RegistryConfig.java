@@ -4,7 +4,8 @@ import tr.edu.deu.efm.command.api.CommandRegistry;
 import tr.edu.deu.efm.command.impl.*;
 import tr.edu.deu.efm.core.api.*;
 import tr.edu.deu.efm.core.impl.changer.DefaultDirectoryChanger;
-import tr.edu.deu.efm.core.impl.copier.DefaultCopier;
+import tr.edu.deu.efm.core.impl.copier.CopyCopier;
+import tr.edu.deu.efm.core.impl.copier.OverwriteCopier;
 import tr.edu.deu.efm.core.impl.lister.DefaultLister;
 import tr.edu.deu.efm.core.impl.mover.CopyMover;
 import tr.edu.deu.efm.core.impl.mover.OverwriteMover;
@@ -56,7 +57,6 @@ public class RegistryConfig {
         EntityRenamer renamer;
         DirectoryChanger directoryChanger;
         
-        // --- Strategy Pattern Resolution ---
         if(Settings.removeSafely) {
             deleter = new TrashBinRemover();
         } else {
@@ -65,16 +65,16 @@ public class RegistryConfig {
         
         if(Settings.overWriteMode) {
             mover = new OverwriteMover();
+            copier = new OverwriteCopier();
         } else {
             mover = new CopyMover();
+            copier = new CopyCopier();
         }
-        
-        copier = new DefaultCopier();
+                     
         lister = new DefaultLister();
         renamer = new DefaultRenamer();
         directoryChanger = new DefaultDirectoryChanger();
         
-        // --- Dependency Injection & Registration ---
         registry.register("rm", new RmCommand(deleter));
         registry.register("mv", new MvCommand(mover));             
         registry.register("cp", new CpCommand(copier));
@@ -82,7 +82,6 @@ public class RegistryConfig {
         registry.register("cd", new CdCommand(directoryChanger));
         registry.register("rn", new RnCommand(renamer));
         
-        // --- Independent Commands ---
         registry.register("exit", new ExitCommand());
         registry.register("help", new HelpCommand(registry));
         registry.register("pwd", new PwdCommand());
