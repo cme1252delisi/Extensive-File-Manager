@@ -21,7 +21,7 @@ public class LsCommand extends BaseCommand {
 	private EntityLister lister;
 
 	public LsCommand(EntityLister lister) {
-		super("ls", "Lists files and directories in the current directory.", "Usage: ls [-l] [-a] [path]");
+		super("ls", "Lists files and directories in a directory.", "Usage: ls [-l] [-a] [path]");
 		this.lister = lister;
 	}
 
