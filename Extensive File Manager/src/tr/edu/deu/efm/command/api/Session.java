@@ -1,5 +1,9 @@
 package tr.edu.deu.efm.command.api;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Represents the stateful environment and memory of a single user session within EFM.
  * <p>
@@ -17,7 +21,7 @@ package tr.edu.deu.efm.command.api;
 public class Session {
     
     private String currentWorkingDirectory;
-//  private List<String> commandHistory;
+    private List<String> commandHistory;
 //  private Clipboard clipboard;
 
     /**
@@ -29,6 +33,7 @@ public class Session {
      */
     public Session() {
         this.currentWorkingDirectory = System.getProperty("user.home");
+        commandHistory = new ArrayList<>();
     }
 
     /**
@@ -53,4 +58,19 @@ public class Session {
     public void setCurrentWorkingDirectory(String currentWorkingDirectory) {
         this.currentWorkingDirectory = currentWorkingDirectory;
     }
+    
+    public void addCommandToHistory(String rawCommand) {
+        if (rawCommand != null && !rawCommand.trim().isEmpty()) {
+            commandHistory.add(rawCommand.trim());
+        }
+    }
+
+    public List<String> getCommandHistory() {
+        return Collections.unmodifiableList(commandHistory);
+    }
+    
+    public void clearHistory() {
+        commandHistory.clear();
+    }
+    
 }

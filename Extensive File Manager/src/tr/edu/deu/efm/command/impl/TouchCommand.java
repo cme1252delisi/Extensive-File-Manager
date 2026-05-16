@@ -32,15 +32,16 @@ public class TouchCommand extends BaseCommand {
 
 		String targetPath = args.get(0);
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
 
 		OperationResult result = creator.create(currentDir, targetPath);
 
 		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+			logTransaction("ERROR", "touch: " + result.getMessage());
+			return new CommandResult(false, "touch: " + result.getMessage());
 		}
-
-		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		logTransaction("SUCCESS", "touch: " + result.getMessage());
+		String output = (verbose) ? "touch: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

@@ -30,15 +30,18 @@ public class OpenCommand extends BaseCommand {
 
 		String targetPath = args.get(0);
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
 
 		OperationResult result = opener.open(currentDir, targetPath);
 
 		if (!result.isSuccess()) {
+			logTransaction("ERROR", "open: " + result.getMessage());
 			return new CommandResult(false, "open: " + result.getMessage());
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? "open: " + result.getMessage() : "";
+		logTransaction("SUCCESS", "open: " + result.getMessage());
+		
+		String output = (verbose) ? "open: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

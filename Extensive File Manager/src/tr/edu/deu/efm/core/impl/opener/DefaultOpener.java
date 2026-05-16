@@ -24,7 +24,7 @@ public class DefaultOpener implements EntityOpener {
 			File targetFile = target.toFile();
 
 			if (!Files.exists(target)) {
-				return new OperationResult(false, "File does not exist: " + targetPath, Collections.emptyList());
+				return new OperationResult(false, "file does not exist: " + targetPath, Collections.emptyList());
 			}
 
 			String fileName = targetFile.getName().toLowerCase();
@@ -37,7 +37,7 @@ public class DefaultOpener implements EntityOpener {
 			}
 
 		} catch (Exception e) {
-			return new OperationResult(false, "Error: " + e.getMessage(), Collections.emptyList());
+			return new OperationResult(false, "error: " + e.getMessage(), Collections.emptyList());
 		}
 	}
 
@@ -60,16 +60,16 @@ public class DefaultOpener implements EntityOpener {
 		pb.directory(file.getParentFile());
 		pb.start();
 
-		return new OperationResult(true, "Program started: " + file.getName(),
+		return new OperationResult(true, "program started: " + file.getName(),
 				Collections.singletonList(file.getAbsolutePath()));
 	}
 
 	private OperationResult openWithDesktop(File file) throws Exception {
 		if (!Desktop.isDesktopSupported()) {
-			return new OperationResult(false, "Desktop operations not supported.", Collections.emptyList());
+			return new OperationResult(false, "desktop operations not supported.", Collections.emptyList());
 		}
 		Desktop.getDesktop().open(file);
-		return new OperationResult(true, "File opened: " + file.getName(),
+		return new OperationResult(true, "file opened: " + file.getName(),
 				Collections.singletonList(file.getAbsolutePath()));
 	}
 

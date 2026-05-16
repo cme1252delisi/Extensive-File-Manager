@@ -21,10 +21,11 @@ public class PwdCommand extends BaseCommand {
 	@Override
 	public CommandResult execute(CommandContext context) {
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
 
-		String output = (verbose || Settings.verboseAsDefault) ? "Current working directory: " + currentDir
-				: currentDir;
+		String output = (verbose) ? "pwd: current working directory: " + currentDir : currentDir;
+
+		logTransaction("INFO", "pwd: current working directory has been printed.");
 
 		return new CommandResult(true, output);
 	}

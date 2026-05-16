@@ -4,21 +4,22 @@ import java.util.List;
 
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandResult;
+import tr.edu.deu.efm.command.api.ConsoleInteractor;
 import tr.edu.deu.efm.config.Settings;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
 import tr.edu.deu.efm.core.api.EntityConverter;
 import tr.edu.deu.efm.core.api.OperationResult;
 
-/**
- * Command implementation for converting files between various formats.
- */
 public class ConvertCommand extends BaseCommand {
 
-	private EntityConverter converter;
+	private final EntityConverter converter;
+	private final ConsoleInteractor console;
 
-	public ConvertCommand(EntityConverter converter) {
+	public ConvertCommand(EntityConverter converter, ConsoleInteractor console) {
 		super("convert", "Converts files between different formats (Images, Documents, Media).",
-				"Usage: convert [-v] [-f] <source_file> <target_file>");
+				"Usage: convert [-f] [-i] [-v] <source_file> <target_file>");
 		this.converter = converter;
+		this.console = console;
 	}
 
 	@Override
@@ -31,18 +32,30 @@ public class ConvertCommand extends BaseCommand {
 
 		String sourcePath = args.get(0);
 		String targetPath = args.get(1);
-
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
-		boolean overwrite = context.getFlags().hasFlag('f');
 
-		OperationResult result = converter.convert(currentDir, sourcePath, targetPath, overwrite);
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
+		boolean force = context.getFlags().hasFlag('f') || Settings.overWriteMode;
+		boolean interactive = context.getFlags().hasFlag('i');
 
-		if (!result.isSuccess()) {
-			return new CommandResult(false, "convert: " + result.getMessage());
+		ConfirmationStrategy strategy;
+		if (force) {
+			strategy = (fileName) -> true;
+		} else if (interactive) {
+			strategy = (fileName) -> console.askConfirmation("convert: overwrite '" + fileName + "'?");
+		} else {
+			strategy = (fileName) -> false;
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? "convert: " + result.getMessage() : "";
+		OperationResult result = converter.convert(currentDir, sourcePath, targetPath, strategy);
+
+		if (!result.isSuccess()) {
+			logTransaction("ERROR", "convert: " + result.getMessage());
+			return new CommandResult(false, result.getMessage());
+		}
+
+		logTransaction("SUCCESS", "convert: " + result.getMessage());
+		String output = verbose ? "convert: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

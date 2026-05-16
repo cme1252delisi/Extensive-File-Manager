@@ -5,26 +5,21 @@ import java.util.List;
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandResult;
 import tr.edu.deu.efm.command.api.Session;
+
+import tr.edu.deu.efm.command.api.ConsoleInteractor;
 import tr.edu.deu.efm.config.Settings;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
 import tr.edu.deu.efm.core.api.EntityMover;
 import tr.edu.deu.efm.core.api.OperationResult;
 
-/**
- * Command implementation for moving or renaming files or directories.
- * <p>
- * This command bridges the user input to the {@link EntityMover} core API. It
- * handles relative paths by passing the session's current directory and
- * strictly adheres to the Result Pattern to display specific success or error
- * messages without relying on exceptions or overloaded data lists.
- * </p>
- */
 public class MvCommand extends BaseCommand {
+	private final EntityMover mover;
+	private final ConsoleInteractor console;
 
-	private EntityMover mover;
-
-	public MvCommand(EntityMover mover) {
-		super("mv", "Moves or renames files or directories.", "Usage: mv [-v] <source> <destination>");
+	public MvCommand(EntityMover mover, ConsoleInteractor console) {
+		super("mv", "Moves or renames files or directories.", "Usage: mv [-v] [-f] [-i] <source> <destination>");
 		this.mover = mover;
+		this.console = console;
 	}
 
 	@Override
@@ -38,18 +33,33 @@ public class MvCommand extends BaseCommand {
 
 		Session session = context.getSession();
 		String currentDir = session.getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
+
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
+		boolean force = context.getFlags().hasFlag('f') || Settings.overWriteMode;
+		boolean interactive = context.getFlags().hasFlag('i');
 
 		String source = args.get(0);
 		String destination = args.get(1);
 
-		OperationResult result = mover.move(currentDir, source, destination);
+		ConfirmationStrategy strategy;
 
-		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+		if (force) {
+			strategy = (fileName) -> true;
+		} else if (interactive) {
+			strategy = (fileName) -> console.askConfirmation("mv: overwrite '" + fileName + "'?");
+		} else {
+			strategy = (fileName) -> false;
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		OperationResult result = mover.move(currentDir, source, destination, strategy);
+
+		if (!result.isSuccess()) {
+			logTransaction("ERROR", "mv: " + result.getMessage());
+			return new CommandResult(false, "mv: " + result.getMessage());
+		}
+
+		logTransaction("SUCCESS", "mv: " + result.getMessage());
+		String output = (verbose || Settings.verboseAsDefault) ? "mv: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

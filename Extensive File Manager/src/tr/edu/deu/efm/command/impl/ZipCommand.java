@@ -4,7 +4,9 @@ import java.util.List;
 
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandResult;
+import tr.edu.deu.efm.command.api.ConsoleInteractor;
 import tr.edu.deu.efm.config.Settings;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
 import tr.edu.deu.efm.core.api.EntityCompressor;
 import tr.edu.deu.efm.core.api.OperationResult;
 
@@ -13,12 +15,14 @@ import tr.edu.deu.efm.core.api.OperationResult;
  */
 public class ZipCommand extends BaseCommand {
 
-	private EntityCompressor compressor;
+	private final EntityCompressor compressor;
+	private final ConsoleInteractor console;
 
-	public ZipCommand(EntityCompressor compressor) {
+	public ZipCommand(EntityCompressor compressor, ConsoleInteractor console) {
 		super("zip", "Compresses a file or directory into a ZIP archive.",
-				"Usage: zip [-v] [-f] <source> [archive_name]");
+				"Usage: zip [-f] [-i] [-v] <source> [archive_name]");
 		this.compressor = compressor;
+		this.console = console;
 	}
 
 	@Override
@@ -45,16 +49,30 @@ public class ZipCommand extends BaseCommand {
 		}
 
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
-		boolean overwrite = context.getFlags().hasFlag('f');
 
-		OperationResult result = compressor.compress(currentDir, sourcePath, archiveName, overwrite);
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
+		boolean force = context.getFlags().hasFlag('f') || Settings.overWriteMode;
+		boolean interactive = context.getFlags().hasFlag('i');
 
-		if (!result.isSuccess()) {
-			return new CommandResult(false, "zip: " + result.getMessage());
+		ConfirmationStrategy strategy;
+		if (force) {
+			strategy = (fileName) -> true;
+		} else if (interactive) {
+			strategy = (fileName) -> console.askConfirmation("zip: overwrite '" + fileName + "'?");
+		} else {
+			strategy = (fileName) -> false;
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? "zip: " + result.getMessage() : "";
+		OperationResult result = compressor.compress(currentDir, sourcePath, archiveName, strategy);
+
+		if (!result.isSuccess()) {
+			logTransaction("ERROR", "zip: " + result.getMessage());
+			return new CommandResult(false, result.getMessage());
+		}
+
+		logTransaction("SUCCESS", "zip: " + result.getMessage());
+
+		String output = verbose ? "zip: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

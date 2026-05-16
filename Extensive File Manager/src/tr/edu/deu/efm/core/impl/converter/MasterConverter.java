@@ -3,42 +3,42 @@ package tr.edu.deu.efm.core.impl.converter;
 import tr.edu.deu.efm.core.api.EntityConverter;
 import tr.edu.deu.efm.core.api.FormatFamily;
 import tr.edu.deu.efm.core.api.OperationResult;
-import tr.edu.deu.efm.core.impl.converter.engine.DocumentEngine;
-import tr.edu.deu.efm.core.impl.converter.engine.ImageEngine;
-import tr.edu.deu.efm.core.impl.converter.engine.MediaEngine;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
+import tr.edu.deu.efm.core.impl.converter.engine.document.DocumentEngine;
+import tr.edu.deu.efm.core.impl.converter.engine.image.ImageEngine;
+import tr.edu.deu.efm.core.impl.converter.engine.media.MediaEngine;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
-/**
- * The Master Converter acts as a Facade and Router. It validates formats,
- * checks compatibility, and delegates the actual conversion to the appropriate
- * specific engine.
- */
 public class MasterConverter implements EntityConverter {
 
 	@Override
-	public OperationResult convert(String currentDir, String sourcePath, String targetPath, boolean overwrite) {
+	public OperationResult convert(String currentDir, String sourcePath, String targetPath,
+			ConfirmationStrategy strategy) {
 		try {
 			Path current = Paths.get(currentDir);
 			Path source = current.resolve(sourcePath).normalize();
 			Path target = current.resolve(targetPath).normalize();
 
 			if (!Files.exists(source)) {
-				return new OperationResult(false, "Source file does not exist: " + sourcePath, Collections.emptyList());
+				return new OperationResult(false, "convert: source file does not exist: " + sourcePath,
+						Collections.emptyList());
 			}
 
 			if (Files.isDirectory(source)) {
-				return new OperationResult(false, "Cannot convert a directory. Please specify a file.",
+				return new OperationResult(false, "convert: cannot convert a directory. please specify a file.",
 						Collections.emptyList());
 			}
 
 			if (Files.exists(target)) {
-				if (!overwrite) {
-					return new OperationResult(false, "Conversion aborted. Target file already exists: '"
-							+ target.getFileName() + "'. Use -f flag to overwrite.", Collections.emptyList());
+				boolean overwriteAllowed = strategy.askPermission(target.getFileName().toString());
+				if (!overwriteAllowed) {
+					return new OperationResult(false,
+							"convert: conversion aborted. target file already exists: '" + target.getFileName() + "'.",
+							Collections.emptyList());
 				}
 			}
 
@@ -50,26 +50,27 @@ public class MasterConverter implements EntityConverter {
 
 			if (srcFamily == FormatFamily.UNKNOWN || tgtFamily == FormatFamily.UNKNOWN) {
 				return new OperationResult(false,
-						"Unsupported file format. Cannot convert '" + srcExt + "' to '" + tgtExt + "'.",
+						"convert: unsupported file format. cannot convert '" + srcExt + "' to '" + tgtExt + "'.",
 						Collections.emptyList());
 			}
 
 			if (srcFamily != tgtFamily) {
 				return new OperationResult(false,
-						"Incompatible conversion! Cannot convert " + srcFamily + " to " + tgtFamily + ".",
+						"convert: incompatible conversion! cannot convert " + srcFamily + " to " + tgtFamily + ".",
 						Collections.emptyList());
 			}
 
 			EntityConverter engine = getEngineForFamily(srcFamily);
 			if (engine == null) {
-				return new OperationResult(false, "Conversion engine for " + srcFamily + " is not implemented yet.",
+				return new OperationResult(false,
+						"convert: conversion engine for " + srcFamily + " is not implemented yet.",
 						Collections.emptyList());
 			}
 
-			return engine.convert(currentDir, sourcePath, targetPath, overwrite);
+			return engine.convert(currentDir, sourcePath, targetPath, strategy);
 
 		} catch (Exception e) {
-			return new OperationResult(false, "Conversion routing failed -> " + e.getMessage(),
+			return new OperationResult(false, "convert: conversion routing failed -> " + e.getMessage(),
 					Collections.emptyList());
 		}
 	}
@@ -82,11 +83,11 @@ public class MasterConverter implements EntityConverter {
 	private EntityConverter getEngineForFamily(FormatFamily family) {
 		switch (family) {
 		case IMAGE:
-			return new ImageEngine(); 
+			return new ImageEngine();
 		case DOCUMENT:
-			return new DocumentEngine(); 
+			return new DocumentEngine();
 		case MEDIA:
-			return new MediaEngine(); 
+			return new MediaEngine();
 		default:
 			return null;
 		}

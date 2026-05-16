@@ -12,9 +12,10 @@ public interface EntityExtractor {
 	 * @param archivePath     The relative or absolute path of the archive to
 	 *                        extract.
 	 * @param destinationPath The folder where the contents will be extracted.
-	 * @param overwrite       If true, existing files will be replaced without
-	 *                        error.
+	 * @param strategy        The rulebook to consult when an extracted file already
+	 *                        exists.
 	 * @return An {@link OperationResult} indicating success or failure.
 	 */
-	OperationResult extract(String currentDir, String archivePath, String destinationPath, boolean overwrite);
+	OperationResult extract(String currentDir, String archivePath, String destinationPath,
+			ConfirmationStrategy strategy);
 }

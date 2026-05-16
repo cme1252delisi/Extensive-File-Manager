@@ -48,13 +48,13 @@ public class DefaultLister implements EntityLister {
 			Path path = currentPath.resolve(pathStr).normalize();
 
 			if (!Files.exists(path)) {
-				return new OperationResult(false, "ls: cannot access '" + pathStr + "': No such file or directory",
+				return new OperationResult(false, "cannot access '" + pathStr + "': No such file or directory",
 						Collections.emptyList());
 			}
 
 			if (!Files.isDirectory(path)) {
 				String fileInfo = detailed ? getDetailedString(path) : path.getFileName().toString();
-				return new OperationResult(true, "ls: successfully listed file '" + pathStr + "'",
+				return new OperationResult(true, "successfully listed file '" + pathStr + "'",
 						Collections.singletonList(fileInfo));
 			}
 
@@ -76,14 +76,14 @@ public class DefaultLister implements EntityLister {
 
 			Collections.sort(results);
 
-			return new OperationResult(true, "ls: successfully listed contents of '" + pathStr + "'", results);
+			return new OperationResult(true, "successfully listed contents of '" + pathStr + "'", results);
 
 		} catch (AccessDeniedException e) {
-			return new OperationResult(false, "ls: cannot open directory '" + pathStr + "': Permission denied",
+			return new OperationResult(false, "cannot open directory '" + pathStr + "': Permission denied",
 					Collections.emptyList());
 		} catch (Exception e) {
 			return new OperationResult(false,
-					"ls: fatal error occurred while listing '" + pathStr + "' -> " + e.getMessage(),
+					"fatal error occurred while listing '" + pathStr + "' -> " + e.getMessage(),
 					Collections.emptyList());
 		}
 	}

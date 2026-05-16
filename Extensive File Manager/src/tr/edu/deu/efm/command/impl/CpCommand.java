@@ -5,25 +5,21 @@ import java.util.List;
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandResult;
 import tr.edu.deu.efm.command.api.Session;
+import tr.edu.deu.efm.command.api.ConsoleInteractor;
 import tr.edu.deu.efm.config.Settings;
 import tr.edu.deu.efm.core.api.EntityCopier;
 import tr.edu.deu.efm.core.api.OperationResult;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
 
-/**
- * Command implementation for copying files or directories.
- * <p>
- * This command utilizes the {@link EntityCopier} core API. It passes the
- * current session directory to accurately resolve relative paths and handles
- * the structured result without relying on exception handling.
- * </p>
- */
 public class CpCommand extends BaseCommand {
 
 	private final EntityCopier copier;
+	private final ConsoleInteractor console;
 
-	public CpCommand(EntityCopier copier) {
-		super("cp", "Copies files or directories.", "Usage: cp <source> <destination>");
+	public CpCommand(EntityCopier copier, ConsoleInteractor console) {
+		super("cp", "Copies files or directories.", "Usage: cp [-v] [-f] [-i] <source> <destination>");
 		this.copier = copier;
+		this.console = console;
 	}
 
 	@Override
@@ -36,15 +32,33 @@ public class CpCommand extends BaseCommand {
 
 		Session session = context.getSession();
 		String currentDir = session.getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
 
-		OperationResult result = copier.copy(currentDir, args.get(0), args.get(1));
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
+		boolean force = context.getFlags().hasFlag('f') || Settings.overWriteMode;
+		boolean interactive = context.getFlags().hasFlag('i');
 
-		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+		String source = args.get(0);
+		String destination = args.get(1);
+
+		ConfirmationStrategy strategy;
+
+		if (force) {
+			strategy = (fileName) -> true;
+		} else if (interactive) {
+			strategy = (fileName) -> console.askConfirmation("cp: overwrite '" + fileName + "'?");
+		} else {
+			strategy = (fileName) -> false;
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		OperationResult result = copier.copy(currentDir, source, destination, strategy);
+
+		if (!result.isSuccess()) {
+			logTransaction("ERROR", "cp: " + result.getMessage());
+			return new CommandResult(false, "cp: " + result.getMessage());
+		}
+
+		logTransaction("SUCCESS", "cp: " + result.getMessage());
+		String output = (verbose) ? "cp: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

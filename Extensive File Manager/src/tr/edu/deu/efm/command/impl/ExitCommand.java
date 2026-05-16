@@ -20,9 +20,11 @@ public class ExitCommand extends BaseCommand {
 
 	@Override
 	public CommandResult execute(CommandContext context) {
-		boolean verbose = context.getFlags().hasFlag('v');
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
 
-		String output = (verbose || Settings.verboseAsDefault) ? "Exiting Extensive File Manager. Goodbye!" : "";
+		logTransaction("INFO", "exit: extemsive File Manager has been terminated.");
+
+		String output = (verbose) ? "exit: exiting extensive file manager. goodbye!" : "";
 
 		return new CommandResult(true, output, true);
 	}

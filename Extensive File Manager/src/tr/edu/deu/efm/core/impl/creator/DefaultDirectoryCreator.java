@@ -17,18 +17,17 @@ public class DefaultDirectoryCreator implements EntityCreator {
 			Path target = currentPath.resolve(targetPath).normalize();
 
 			if (Files.exists(target)) {
-				return new OperationResult(false, "mkdir: cannot create directory '" + targetPath + "': File exists",
+				return new OperationResult(false, "cannot create directory '" + targetPath + "': File exists",
 						Collections.emptyList());
 			}
 
 			Files.createDirectories(target);
 
-			return new OperationResult(true, "mkdir: created directory '" + targetPath + "'",
+			return new OperationResult(true, "created directory '" + targetPath + "'",
 					Collections.singletonList(target.toString()));
 
 		} catch (Exception e) {
-			return new OperationResult(false, "mkdir: error creating directory -> " + e.getMessage(),
-					Collections.emptyList());
+			return new OperationResult(false, "error creating directory -> " + e.getMessage(), Collections.emptyList());
 		}
 	}
 }

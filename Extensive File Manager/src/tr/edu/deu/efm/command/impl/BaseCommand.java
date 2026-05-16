@@ -1,6 +1,12 @@
 package tr.edu.deu.efm.command.impl;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import tr.edu.deu.efm.command.api.Command;
+import tr.edu.deu.efm.config.Settings;
 
 /**
  * An abstract base class that provides a skeletal implementation of the
@@ -18,7 +24,6 @@ import tr.edu.deu.efm.command.api.Command;
  * </p>
  */
 public abstract class BaseCommand implements Command {
-
 	private final String name;
 	private final String description;
 	private final String usage;
@@ -63,4 +68,25 @@ public abstract class BaseCommand implements Command {
 	public String getUsage() {
 		return usage;
 	}
+
+	protected void logTransaction(String status, String details) {
+		logTransaction(status, details, false);
+	}
+
+	protected void logTransaction(String status, String details, boolean clearHistory) {
+		if (!Settings.logEnabled)
+			return;
+
+		try {
+			String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+			String logEntry = String.format("[%s] [%-7s] %s", timestamp, status, details);
+
+			try (BufferedWriter bw = new BufferedWriter(new FileWriter(Settings.logFilePath, !clearHistory))) {
+				bw.write(logEntry);
+				bw.newLine();
+			}
+		} catch (Exception e) {
+		}
+	}
+
 }

@@ -13,8 +13,9 @@ public interface EntityCompressor {
 	 *                    compressed.
 	 * @param archiveName The name or path of the target archive (e.g.,
 	 *                    "backup.zip").
-	 * @param overwrite   If true, existing archives will be replaced without error.
+	 * @param strategy    The rulebook to consult when a target archive collision
+	 *                    occurs.
 	 * @return An {@link OperationResult} indicating success or failure.
 	 */
-	OperationResult compress(String currentDir, String sourcePath, String archiveName, boolean overwrite);
+	OperationResult compress(String currentDir, String sourcePath, String archiveName, ConfirmationStrategy strategy);
 }

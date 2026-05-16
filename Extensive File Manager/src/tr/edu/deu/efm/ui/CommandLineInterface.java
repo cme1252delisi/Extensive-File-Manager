@@ -33,14 +33,24 @@ public class CommandLineInterface {
 
 			do {
 				System.out.print(session.getCurrentWorkingDirectory() + ">>");
-				String userInput = scr.nextLine();
+
+				String userInput = "";
+
+				if (!scr.hasNextLine()) {
+					System.out.println("exit");
+					userInput = "exit";
+				} else {
+					userInput = scr.nextLine();
+				}
 
 				try {
 					context = commandParser.parse(userInput);
-					
-                    if (context != null) {
-                        context.setSession(session);
-                    }
+
+					if (context != null) {
+						context.setSession(session);
+					}
+
+					session.addCommandToHistory(userInput);
 
 				} catch (IllegalArgumentException e) {
 				}

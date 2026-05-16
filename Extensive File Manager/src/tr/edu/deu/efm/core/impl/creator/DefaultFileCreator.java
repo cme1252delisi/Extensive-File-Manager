@@ -20,17 +20,17 @@ public class DefaultFileCreator implements EntityCreator {
 
 			if (Files.exists(target)) {
 				Files.setLastModifiedTime(target, FileTime.from(Instant.now()));
-				return new OperationResult(true, "touch: updated timestamp of existing file '" + targetPath + "'",
+				return new OperationResult(true, "updated timestamp of existing file '" + targetPath + "'",
 						Collections.singletonList(target.toString()));
 			}
 
 			Files.createFile(target);
 
-			return new OperationResult(true, "touch: created empty file '" + targetPath + "'",
+			return new OperationResult(true, "created empty file '" + targetPath + "'",
 					Collections.singletonList(target.toString()));
 
 		} catch (Exception e) {
-			return new OperationResult(false, "touch: error creating file -> " + e.getMessage(),
+			return new OperationResult(false, "error creating file -> " + e.getMessage(),
 					Collections.emptyList());
 		}
 	}

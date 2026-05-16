@@ -41,6 +41,8 @@ public class HelpCommand extends BaseCommand {
 			}
 		}
 
+		logTransaction("INFO", "help: command information displayed.");
+
 		return new CommandResult(true, sb.toString().trim());
 	}
 }

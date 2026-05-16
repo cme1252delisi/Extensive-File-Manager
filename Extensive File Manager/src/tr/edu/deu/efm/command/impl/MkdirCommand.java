@@ -30,15 +30,18 @@ public class MkdirCommand extends BaseCommand {
 
 		String targetPath = args.get(0);
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean verbose = context.getFlags().hasFlag('v');
+		boolean verbose = context.getFlags().hasFlag('v') || Settings.verboseAsDefault;
 
 		OperationResult result = creator.create(currentDir, targetPath);
 
 		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+			logTransaction("ERROR", "mkdir: " + result.getMessage());
+			return new CommandResult(false, "mkdir: " + result.getMessage());
 		}
 
-		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		logTransaction("SUCCESS", "mkdir: " + result.getMessage());
+
+		String output = (verbose) ? "mkdir: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }

@@ -19,5 +19,5 @@ public interface EntityMover {
      * @param targetPath  The relative or absolute path of the destination.
      * @return An {@link OperationResult} indicating the outcome.
      */
-    OperationResult move(String currentDir, String sourcePath, String targetPath);
+    OperationResult move(String currentDir, String sourcePath, String targetPath, ConfirmationStrategy strategy);
 }

@@ -5,26 +5,21 @@ import java.util.List;
 import tr.edu.deu.efm.command.api.CommandContext;
 import tr.edu.deu.efm.command.api.CommandFlags;
 import tr.edu.deu.efm.command.api.CommandResult;
+import tr.edu.deu.efm.command.api.ConsoleInteractor;
 import tr.edu.deu.efm.config.Settings;
+import tr.edu.deu.efm.core.api.ConfirmationStrategy;
 import tr.edu.deu.efm.core.api.EntityRemover;
 import tr.edu.deu.efm.core.api.OperationResult;
 
-/**
- * Command implementation for removing files or directories.
- * <p>
- * This command interfaces with the {@link EntityRemover} core API. It supports
- * recursive deletion flags and gracefully handles errors (like attempting to
- * delete a directory without the recursive flag) via the structured Result
- * Pattern.
- * </p>
- */
 public class RmCommand extends BaseCommand {
 
-	private EntityRemover remover;
+	private final EntityRemover remover;
+	private final ConsoleInteractor console;
 
-	public RmCommand(EntityRemover remover) {
-		super("rm", "Removes files or directories.", "Usage: rm [-r] [-v] <path>");
+	public RmCommand(EntityRemover remover, ConsoleInteractor console) {
+		super("rm", "Removes files or directories.", "Usage: rm [-r] [-f] [-i] [-p] [-v] <path>");
 		this.remover = remover;
+		this.console = console;
 	}
 
 	@Override
@@ -38,22 +33,38 @@ public class RmCommand extends BaseCommand {
 
 		String targetPath = args.get(0);
 		String currentDir = context.getSession().getCurrentWorkingDirectory();
-		boolean recursive = flags.hasFlag('r');
-		boolean verbose = flags.hasFlag('v');
 
-		OperationResult result = remover.remove(currentDir, targetPath, recursive);
+		boolean recursive = flags.hasFlag('r');
+		boolean verbose = flags.hasFlag('v') || Settings.verboseAsDefault;
+		boolean force = flags.hasFlag('f');
+		boolean interactive = flags.hasFlag('i');
+		boolean permanent = flags.hasFlag('p') || !Settings.removeSafely;
+
+		ConfirmationStrategy strategy;
+
+		if (force) {
+			strategy = (msg) -> true;
+		} else if (interactive) {
+			strategy = (msg) -> console.askConfirmation(msg);
+		} else {
+			strategy = (msg) -> true;
+		}
+
+		OperationResult result = remover.remove(currentDir, targetPath, recursive, permanent, strategy);
 
 		if (!result.isSuccess()) {
+			logTransaction("ERROR", "rm: " + result.getMessage());
 			return new CommandResult(false, result.getMessage());
 		}
 
 		StringBuilder output = new StringBuilder();
-		if (verbose || Settings.verboseAsDefault) {
+		if (verbose) {
 			for (String item : result.getAffectedItems()) {
-				output.append("removed '").append(item).append("'\n");
+				output.append("rm: processed '").append(item).append("'\n");
 			}
 		}
 
+		logTransaction("SUCCESS", "rm: " + result.getMessage());
 		return new CommandResult(true, output.toString().trim());
 	}
 }

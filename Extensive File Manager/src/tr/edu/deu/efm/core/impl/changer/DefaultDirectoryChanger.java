@@ -43,20 +43,19 @@ public class DefaultDirectoryChanger implements DirectoryChanger {
 			Path resolvedPath = currentPath.resolve(targetPathStr).normalize();
 
 			if (!Files.exists(resolvedPath)) {
-				return new OperationResult(false, "cd: " + targetPathStr + ": No such file or directory",
+				return new OperationResult(false, targetPathStr + ": No such file or directory",
 						Collections.emptyList());
 			}
 
 			if (!Files.isDirectory(resolvedPath)) {
-				return new OperationResult(false, "cd: " + targetPathStr + ": Not a directory",
-						Collections.emptyList());
+				return new OperationResult(false, targetPathStr + ": Not a directory", Collections.emptyList());
 			}
 
-			return new OperationResult(true, "cd: successfully changed directory to '" + resolvedPath.toString() + "'",
+			return new OperationResult(true, "successfully changed directory to '" + resolvedPath.toString() + "'",
 					Collections.singletonList(resolvedPath.toString()));
 
 		} catch (Exception e) {
-			return new OperationResult(false, "cd: failed to change directory -> " + e.getMessage(),
+			return new OperationResult(false, "failed to change directory -> " + e.getMessage(),
 					Collections.emptyList());
 		}
 	}

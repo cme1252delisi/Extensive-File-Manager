@@ -37,7 +37,8 @@ public class LsCommand extends BaseCommand {
 		OperationResult result = lister.list(currentDir, targetPath, showHidden, detailed);
 
 		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+			logTransaction("ERROR", "ls: " + result.getMessage());
+			return new CommandResult(false, "ls: " + result.getMessage());
 		}
 
 		StringBuilder output = new StringBuilder();
@@ -46,6 +47,8 @@ public class LsCommand extends BaseCommand {
 		for (String item : items) {
 			output.append(item).append("\n");
 		}
+
+		logTransaction("SUCCESS", "ls: " + result.getMessage());
 
 		return new CommandResult(true, output.toString().trim());
 	}

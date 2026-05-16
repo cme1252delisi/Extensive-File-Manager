@@ -39,7 +39,7 @@ public class Settings {
      * <li>{@code false}: Commands operate silently or with minimal standard output unless overridden by a specific flag.</li>
      * </ul>
      */
-    public static boolean verboseAsDefault = false;
+    public static boolean verboseAsDefault = true;
     
     /**
      * Defines the collision resolution policy for file operations (e.g., Copy or Move).
@@ -48,7 +48,7 @@ public class Settings {
      * <li>{@code false}: Operations will safely abort and return a failure message to prevent accidental data loss.</li>
      * </ul>
      */
-    public static boolean overWriteMode = true;
+    public static boolean overWriteMode = false;
     
     /**
      * Master switch for the application's audit logging mechanism.
@@ -58,4 +58,8 @@ public class Settings {
      * </ul>
      */
     public static boolean logEnabled = true;
+    
+    
+    public static String logFilePath = "efm_history.log";
+    
 }

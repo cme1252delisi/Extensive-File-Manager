@@ -41,12 +41,15 @@ public class CdCommand extends BaseCommand {
 		OperationResult result = changer.changeDirectory(session.getCurrentWorkingDirectory(), targetFolder);
 
 		if (!result.isSuccess()) {
-			return new CommandResult(false, result.getMessage());
+			logTransaction("ERROR", "cd: " + result.getMessage());
+			return new CommandResult(false, "cd: " + result.getMessage());
 		}
 
 		session.setCurrentWorkingDirectory(result.getAffectedItems().get(0));
 
-		String output = (verbose || Settings.verboseAsDefault) ? result.getMessage() : "";
+		logTransaction("SUCCESS", "cd: " + result.getMessage());
+
+		String output = (verbose || Settings.verboseAsDefault) ? "cd: " + result.getMessage() : "";
 		return new CommandResult(true, output);
 	}
 }
